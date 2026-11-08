@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Home Loan Prepayment Calculator — Bengaluru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:opsz,wght@6..72,600;6..72,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f4ef; --surface:#ffffff; --surface2:#fcfbf8; --ink:#162629; --muted:#5b6b6e; --line:#e3ded2;
+    --teal:#0f766e; --teal-dark:#0b5e57; --teal-soft:#e6f2f0; --amber:#b45309; --amber-soft:#fdf3e3;
+    --red:#b42318; --shadow:0 10px 30px rgba(22,38,41,.08); --radius:16px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0f1618; --surface:#182224; --surface2:#1c282b; --ink:#e9efee; --muted:#9db0b2; --line:#2c3a3d;
+      --teal:#2dd4bf; --teal-dark:#5eead4; --teal-soft:#14302d; --amber:#f5b04b; --amber-soft:#2e2413;
+      --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:var(--teal)}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 18px 56px}
+  /* header */
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);font-weight:600}
+  h1{font-family:"Newsreader",Georgia,serif;font-size:clamp(32px,5vw,52px);line-height:1.02;letter-spacing:-.02em;margin:10px 0 10px;font-weight:700;max-width:760px}
+  h1 em{font-style:italic;color:var(--teal)}
+  .lede{font-size:17px;color:var(--muted);max-width:680px;margin:0}
+  .lede strong{color:var(--ink)}
+  /* context strip */
+  .context{margin-top:26px;background:var(--ink);color:#f3efe6;border-radius:var(--radius);padding:20px 20px 18px;overflow:hidden;position:relative}
+  @media (prefers-color-scheme: dark){.context{background:#1e2e30}}
+  .context h2{margin:0 0 4px;font-size:15px;letter-spacing:.02em}
+  .context p.sub{margin:0;color:#c8cfc9;font-size:13.5px;max-width:640px}
+  .context-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+  .ctx-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:14px}
+  .ctx-card .big{font-family:"IBM Plex Mono",monospace;font-size:26px;font-weight:600;color:#fff}
+  .ctx-card .lbl{font-size:12.5px;color:#d6ddd8;margin-top:2px;line-height:1.4}
+  .prop-calc{margin-top:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:14px;display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+  .prop-calc label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#c8cfc9;display:block;margin-bottom:6px;font-weight:600}
+  .prop-calc input{background:#fff;color:#162629;border:0;border-radius:8px;padding:10px 12px;font-family:"IBM Plex Mono",monospace;font-size:16px;width:200px;max-width:100%}
+  .prop-out{display:flex;gap:22px;flex-wrap:wrap}
+  .prop-out div span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#c8cfc9}
+  .prop-out div b{font-family:"IBM Plex Mono",monospace;font-size:16px;color:#fff}
+  .worked{margin-top:12px;font-size:13px;color:#d6ddd8;border-top:1px dashed rgba(255,255,255,.2);padding-top:10px}
+  .worked b{color:#fff}
+  /* layout */
+  .grid{display:grid;grid-template-columns:400px 1fr;gap:18px;margin-top:18px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}.context-grid{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .controls{padding:20px;position:sticky;top:14px}
+  @media(max-width:900px){.controls{position:static}}
+  .controls h2,.results h2,.section h2{font-size:16px;margin:0 0 2px}
+  .hint{font-size:13px;color:var(--muted);margin:0 0 14px}
+  .field{margin-bottom:18px}
+  .field-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+  .field-head label{font-size:13px;font-weight:600;letter-spacing:.01em}
+  .field-head .val{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--teal);font-weight:600;white-space:nowrap}
+  input[type=range]{width:100%;accent-color:var(--teal);height:28px;cursor:pointer}
+  .numrow{display:flex;gap:8px}
+  .numrow input[type=number], .numrow input[type=month], .field input[type=number].full{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:9px;padding:10px 11px;font-family:"IBM Plex Mono",monospace;font-size:15px;width:100%}
+  .numrow input:focus, input:focus{outline:2px solid var(--teal);outline-offset:1px}
+  .divider{border:0;border-top:1px dashed var(--line);margin:20px 0}
+  .prepay-head{display:flex;align-items:center;justify-content:space-between}
+  .prepay-head h3{font-size:14px;margin:0}
+  .badge{font-size:11px;background:var(--amber-soft);color:var(--amber);border:1px solid color-mix(in srgb,var(--amber) 30%, transparent);padding:3px 8px;border-radius:999px;font-weight:600}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:4px;gap:4px}
+  .seg button{border:0;background:transparent;color:var(--muted);padding:10px 8px;border-radius:8px;font-family:inherit;font-weight:600;font-size:13.5px;cursor:pointer}
+  .seg button.active{background:var(--teal);color:#fff;box-shadow:0 2px 8px rgba(15,118,110,.3)}
+  .seg-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+  .reset-btn{width:100%;margin-top:4px;background:transparent;border:1px solid var(--line);color:var(--ink);padding:10px;border-radius:9px;font-family:inherit;font-weight:600;cursor:pointer;font-size:13.5px}
+  .reset-btn:hover{border-color:var(--teal);color:var(--teal)}
+  /* results */
+  .results{padding:20px}
+  .hero-result{background:var(--teal-soft);border:1px solid color-mix(in srgb,var(--teal) 25%, transparent);border-radius:12px;padding:18px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
+  .hero-result .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);font-weight:700}
+  .hero-result .amt{font-family:"IBM Plex Mono",monospace;font-size:clamp(30px,4vw,42px);font-weight:600;line-height:1;color:var(--ink)}
+  .hero-result .sub{font-size:13px;color:var(--muted);margin-top:5px;max-width:320px}
+  .tenure-pill{text-align:right}
+  .tenure-pill .n{font-family:"Newsreader",serif;font-size:30px;font-weight:700}
+  .tenure-pill .t{font-size:12.5px;color:var(--muted)}
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+  @media(max-width:640px){.stat-grid{grid-template-columns:1fr 1fr}.tenure-pill{text-align:left}}
+  .stat{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface2)}
+  .stat .k{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+  .stat .v{font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:600;margin-top:4px}
+  .stat .d{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .compare{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .compare table{width:100%;border-collapse:collapse;font-size:14px}
+  .compare th,.compare td{padding:11px 14px;text-align:right}
+  .compare th:first-child,.compare td:first-child{text-align:left}
+  .compare thead th{background:var(--surface2);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .compare tbody tr+tr{border-top:1px solid var(--line)}
+  .compare td.num{font-family:"IBM Plex Mono",monospace}
+  .compare .save-row{background:var(--teal-soft);font-weight:600}
+  /* sections */
+  .section{margin-top:18px;padding:20px}
+  .section h2{margin-bottom:4px}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:10px 0}
+  .legend i{display:inline-block;width:22px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+  .chart-wrap{width:100%;overflow:hidden}
+  svg.chart{width:100%;height:auto;display:block}
+  .table-scroll{overflow-x:auto;margin-top:10px;border:1px solid var(--line);border-radius:12px}
+  table.amort{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+  table.amort th, table.amort td{padding:9px 12px;text-align:right;white-space:nowrap}
+  table.amort th:first-child, table.amort td:first-child{text-align:left}
+  table.amort thead th{background:var(--surface2);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);position:sticky;top:0}
+  table.amort tbody tr+tr{border-top:1px solid var(--line)}
+  table.amort td{font-family:"IBM Plex Mono",monospace;font-size:13px}
+  table.amort td:first-child{font-family:"IBM Plex Sans",sans-serif;font-weight:600}
+  .how{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+  @media(max-width:800px){.how{grid-template-columns:1fr}}
+  .how div{border-top:3px solid var(--teal);padding-top:10px}
+  .how h3{margin:0 0 5px;font-size:14.5px}
+  .how p{margin:0;font-size:13.5px;color:var(--muted)}
+  .faq{margin-top:6px}
+  .faq details{border-top:1px solid var(--line);padding:12px 0}
+  .faq summary{font-weight:600;cursor:pointer;font-size:15px}
+  .faq p{color:var(--muted);font-size:14px;margin:8px 0 2px;max-width:760px}
+  footer{margin-top:22px;font-size:12.5px;color:var(--muted);max-width:760px}
+  .error{display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:10px}
+  @media (prefers-color-scheme: dark){.error{background:#2a1414;border-color:#5b2323;color:#fca5a5}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Bengaluru · Home Loan Toolkit</div>
+  <h1>Prepay your home loan, <em>see exactly</em> what you save.</h1>
+  <p class="lede">Most Bengaluru buyers focus on the EMI and ignore the interest. On an <strong>₹80 lakh loan at 8.5% over 20 years, you pay ₹86.6 lakh in interest alone</strong> — more than the loan itself. A modest prepayment changes that maths completely. Try it below.</p>
+
+  <!-- Bengaluru context -->
+  <section class="context" aria-label="Bengaluru buying costs">
+    <h2>Buying in Bengaluru? Budget for these on top of the flat price</h2>
+    <p class="sub">Karnataka charges are levied on the agreement / guidance value. They are not covered by your home loan in most cases, so keep this cash aside.</p>
+    <div class="context-grid">
+      <div class="ctx-card"><div class="big">5.65%</div><div class="lbl">Stamp duty in Karnataka (5% stamp duty + surcharges). On ₹1 Cr, that is ₹5.65 lakh.</div></div>
+      <div class="ctx-card"><div class="big">1.00%</div><div class="lbl">Registration charges. On ₹1 Cr, another ₹1 lakh — payable at the sub-registrar office.</div></div>
+      <div class="ctx-card"><div class="big">75–90%</div><div class="lbl">Typical loan-to-value. Banks fund 75–90% of property value; the rest is your down payment.</div></div>
+    </div>
+    <div class="prop-calc">
+      <div>
+        <label for="propPrice">Property price (₹)</label>
+        <input id="propPrice" type="number" value="10000000" min="0" step="100000">
+      </div>
+      <div class="prop-out">
+        <div><span>Stamp duty 5.65%</span><b id="stampOut">₹5,65,000</b></div>
+        <div><span>Registration 1%</span><b id="regOut">₹1,00,000</b></div>
+        <div><span>Total extra cash needed</span><b id="extraOut">₹6,65,000</b></div>
+        <div><span>Max loan @ 90% LTV</span><b id="ltvOut">₹90,00,000</b></div>
+      </div>
+    </div>
+    <p class="worked"><b>Worked example:</b> A ₹1 Cr apartment in Whitefield costs ₹1,06,65,000 all-in before interiors. If you take the max 90% loan (₹90L), you still need ₹16.65L in cash — ₹10L down payment + ₹6.65L in duty and registration.</p>
+  </section>
+
+  <div class="grid">
+    <!-- CONTROLS -->
+    <section class="card controls" aria-label="Loan inputs">
+      <h2>Your loan</h2>
+      <p class="hint">Defaults are a typical Bengaluru loan: ₹80L, 8.5%, 20 years.</p>
+
+      <div class="field">
+        <div class="field-head"><label for="loanAmt">Loan amount</label><span class="val" id="loanAmtVal">₹80.0L</span></div>
+        <input type="range" id="loanAmtRange" min="1000000" max="30000000" step="100000" value="8000000">
+        <div class="numrow"><input type="number" id="loanAmt" value="8000000" min="100000" step="50000"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-head"><label for="rate">Interest rate (p.a.)</label><span class="val" id="rateVal">8.50%</span></div>
+        <input type="range" id="rateRange" min="6" max="12" step="0.05" value="8.5">
+        <div class="numrow"><input type="number" id="rate" value="8.5" min="1" max="20" step="0.05"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-head"><label for="tenure">Tenure (years)</label><span class="val" id="tenureVal">20 yrs · 240 mo</span></div>
+        <input type="range" id="tenureRange" min="5" max="30" step="1" value="20">
+        <div class="numrow"><input type="number" id="tenure" value="20" min="1" max="30" step="1"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-head"><label for="emi">Monthly EMI</label><span class="val">auto-calculated</span></div>
+        <div class="numrow"><input type="number" id="emi" value="69443" min="0" step="100"></div>
+        <p class="hint" style="margin:6px 0 0">Edit this if your bank charges a different EMI. Changing loan, rate or tenure recalculates it.</p>
+      </div>
+
+      <div class="field">
+        <div class="field-head"><label for="startDate">Loan start month</label></div>
+        <div class="numrow"><input type="month" id="startDate" value="2026-11"></div>
+      </div>
+
+      <hr class="divider">
+      <div class="prepay-head"><h3>Prepayments</h3><span class="badge">Set any to 0 to switch it off</span></div>
+      <p class="hint">Bonuses, hikes and one extra EMI a year — this is where the saving lives.</p>
+
+      <div class="field">
+        <div class="field-head"><label for="monthlyExtra">Extra every month</label><span class="val" id="monthlyExtraVal">₹5,000/mo</span></div>
+        <input type="range" id="monthlyExtraRange" min="0" max="100000" step="1000" value="5000">
+        <div class="numrow"><input type="number" id="monthlyExtra" value="5000" min="0" step="500"></div>
+      </div>
+
+      <div class="two">
+        <div class="field">
+          <div class="field-head"><label for="lumpSum">One-time lump sum</label></div>
+          <input type="number" class="full" id="lumpSum" value="300000" min="0" step="10000">
+        </div>
+        <div class="field">
+          <div class="field-head"><label for="lumpMonth">In month #</label></div>
+          <input type="number" class="full" id="lumpMonth" value="12" min="1" max="360" step="1">
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-head"><label for="annualAmt">Annual bonus prepayment</label><span class="val">every 12 months</span></div>
+        <div class="numrow"><input type="number" id="annualAmt" value="50000" min="0" step="5000"></div>
+        <p class="hint" style="margin:6px 0 0">Paid in month 12, 24, 36… — e.g. your yearly bonus or appraisal arrears.</p>
+      </div>
+
+      <hr class="divider">
+      <div class="field">
+        <div class="field-head"><label>When you prepay, bank should…</label></div>
+        <div class="seg" role="tablist" aria-label="Prepayment strategy">
+          <button id="stratTenure" class="active" type="button">Reduce tenure</button>
+          <button id="stratEmi" type="button">Reduce EMI</button>
+        </div>
+        <p class="seg-note" id="stratNote">EMI stays the same, loan ends sooner. This saves the most interest — always ask your bank for this in writing.</p>
+      </div>
+
+      <div class="error" id="errBox"></div>
+      <button class="reset-btn" id="resetBtn" type="button">Reset to ₹80L · 8.5% · 20 years</button>
+    </section>
+
+    <!-- RESULTS -->
+    <div>
+      <section class="card results" aria-label="Results">
+        <h2>What prepaying does for you</h2>
+        <p class="hint" id="scenarioLine">With ₹5,000/mo extra + ₹3L in month 12 + ₹50,000/yr</p>
+
+        <div class="hero-result">
+          <div>
+            <div class="lbl">Interest saved</div>
+            <div class="amt" id="interestSaved">₹0</div>
+            <div class="sub" id="interestSavedSub">Compared to paying only the EMI for the full tenure.</div>
+          </div>
+          <div class="tenure-pill">
+            <div class="n" id="tenureSaved">0 mo</div>
+            <div class="t">shorter loan life</div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat"><div class="k">New payoff date</div><div class="v" id="payoffDate">—</div><div class="d" id="payoffOrig">Originally —</div></div>
+          <div class="stat"><div class="k">Loan-free in</div><div class="v" id="newTenure">—</div><div class="d" id="origTenureLine">Originally 20 yrs</div></div>
+          <div class="stat"><div class="k" id="emiStatLabel">EMI (unchanged)</div><div class="v" id="emiStat">—</div><div class="d" id="emiStatSub">Reduce-tenure mode</div></div>
+        </div>
+
+        <div class="compare">
+          <table>
+            <thead><tr><th></th><th>EMI only</th><th>With prepayment</th><th>You save</th></tr></thead>
+            <tbody>
+              <tr><td>Total interest</td><td class="num" id="baseInterest">—</td><td class="num" id="newInterest">—</td><td class="num" id="saveInterest2">—</td></tr>
+              <tr><td>Total paid (principal + interest)</td><td class="num" id="baseTotal">—</td><td class="num" id="newTotal">—</td><td class="num" id="saveTotal">—</td></tr>
+              <tr class="save-row"><td>Months to loan-free</td><td class="num" id="baseMonths">—</td><td class="num" id="newMonths">—</td><td class="num" id="saveMonths">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint" style="margin-top:10px">Note on “total paid”: in reduce-tenure mode total paid falls by exactly the interest saved. In reduce-EMI mode the tenure stays the same, so the saving shows up as a lower EMI instead.</p>
+      </section>
+
+      <section class="card section" aria-label="Balance chart">
+        <h2>Outstanding balance over time</h2>
+        <p class="hint">Watch the teal line hit zero years before the grey one. That gap is rent-free, EMI-free life.</p>
+        <div class="legend"><span><i style="background:#94a3a0"></i>EMI only</span><span><i style="background:var(--teal)"></i>With prepayment</span></div>
+        <div class="chart-wrap" id="chartWrap"></div>
+      </section>
+
+      <section class="card section" aria-label="Amortization table">
+        <h2>Year-by-year breakdown <span style="color:var(--muted);font-weight:400;font-size:13px">— with prepayment</span></h2>
+        <p class="hint">In the early years most of your EMI is interest. Prepayment attacks the principal, so every later year’s interest shrinks.</p>
+        <div class="table-scroll">
+          <table class="amort">
+            <thead><tr><th>Year</th><th>Opening</th><th>EMI paid</th><th>Extra prepaid</th><th>Interest</th><th>Principal repaid</th><th>Closing</th></tr></thead>
+            <tbody id="amortBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card section">
+        <h2>How to actually use this</h2>
+        <div class="how">
+          <div><h3>1. One extra EMI a year</h3><p>Prepaying just one extra EMI every year (₹69,426 here) on an ₹80L loan cuts roughly 3–4 years off a 20-year tenure. Set it up for the month your bonus lands.</p></div>
+          <div><h3>2. Always choose “reduce tenure”</h3><p>Banks default to reducing your EMI because it keeps you paying interest longer. Put “reduce tenure, keep EMI same” in writing on the prepayment request.</p></div>
+          <div><h3>3. Check charges first</h3><p>Floating-rate home loans to individuals have no prepayment penalty (RBI rule). Fixed-rate loans can charge 2–3%. Confirm yours before paying a lump sum.</p></div>
+        </div>
+        <div class="faq">
+          <details><summary>Does prepaying beat investing the same money?</summary><p>Prepaying earns you a guaranteed, tax-free return equal to your loan rate — 8.5% here, with zero risk. An index fund may return more over 15–20 years but with volatility. A common middle path Bengaluru buyers use: keep a 6-month emergency fund, prepay until the loan is under ~50% of property value, then split between prepayment and investing.</p></details>
+          <details><summary>When is prepayment not worth it?</summary><p>If the lump sum would wipe out your emergency fund, if your loan is in its last 2–3 years (mostly principal left, little interest to save), or if you plan to sell the property within a year. Run those cases above — set the lump sum month late and watch the saving shrink.</p></details>
+          <details><summary>How is the EMI calculated?</summary><p>EMI = P × r × (1+r)<sup>n</sup> ÷ ((1+r)<sup>n</sup> − 1), where P is the loan amount, r is the monthly rate (annual rate ÷ 12), and n is the tenure in months. This calculator simulates every month, so lump sums and annual prepayments land in the exact month you choose.</p></details>
+        </div>
+      </section>
+
+      <footer>Estimates only — your bank’s exact amortisation depends on disbursement date, rate resets on floating loans, and part-payment rules. Stamp duty (5.65%) and registration (1%) are Karnataka rates as commonly published; verify the current guidance value and charges for your property before registering. This page stores nothing and sends nothing anywhere.</footer>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var strategy = "tenure"; // or "emi"
+
+  function fmtINR(n){
+    if(!isFinite(n)) return "—";
+    var neg = n<0; n = Math.abs(Math.round(n));
+    var s = n.toLocaleString("en-IN");
+    return (neg?"−₹":"₹")+s;
+  }
+  function fmtShort(n){
+    if(!isFinite(n)) return "—";
+    var neg=n<0; n=Math.abs(n);
+    var out;
+    if(n>=1e7) out = "₹"+(n/1e7).toFixed(2).replace(/\.00$/,"")+" Cr";
+    else if(n>=1e5) out = "₹"+(n/1e5).toFixed(1).replace(/\.0$/,"")+"L";
+    else out = fmtINR(n);
+    return (neg?"−":"")+out;
+  }
+  function calcEMI(P, annualRate, months){
+    var r = annualRate/100/12;
+    if(months<=0) return 0;
+    if(r===0) return P/months;
+    var f = Math.pow(1+r, months);
+    return P * r * f/(f-1);
+  }
+  function addMonths(dateStr, months){
+    // dateStr "YYYY-MM"
+    var parts = dateStr.split("-");
+    var y = parseInt(parts[0],10), m = parseInt(parts[1],10);
+    var total = (y*12 + (m-1)) + months;
+    var ny = Math.floor(total/12), nm = (total%12)+1;
+    var names=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return names[nm-1]+" "+ny;
+  }
+  function fmtTenure(months){
+    var y = Math.floor(months/12), m = months%12;
+    if(y===0) return m+" mo";
+    if(m===0) return y+" yrs";
+    return y+" yrs "+m+" mo";
+  }
+
+  // Simulation: returns payoff months, totals, yearly rows, monthly balances
+  function simulate(P, annualRate, startEMI, totalMonthsOrig, opts){
+    var r = annualRate/100/12;
+    var balance = P, emi = startEMI, month=0;
+    var totalInterest=0, totalPaid=0, totalExtra=0;
+    var yearly=[]; var cur=null;
+    var balances=[P];
+    while(balance>0.5 && month<600){
+      month++;
+      var interest = balance*r;
+      var schedPrin = emi - interest;
+      if(schedPrin<=0){ return {error:"EMI is too low to cover monthly interest. Increase the EMI or lower the loan / rate."}; }
+      var extra = 0;
+      if(opts){
+        extra += (opts.monthlyExtra||0);
+        if(opts.lumpSum>0 && month===opts.lumpMonth) extra += opts.lumpSum;
+        if(opts.annualAmt>0 && month>=12 && month%12===0) extra += opts.annualAmt;
+      }
+      var prin = schedPrin + extra;
+      var emiPaidThisMonth = emi, extraUsed = extra;
+      if(prin >= balance){
+        extraUsed = Math.max(0, balance - schedPrin);
+        emiPaidThisMonth = interest + Math.min(balance, schedPrin) ;
+        // if balance less than schedPrin, emi actually paid is interest+balance
+        if(balance < schedPrin) emiPaidThisMonth = interest + balance;
+        prin = balance;
+      }
+      var paid = interest + prin;
+      totalInterest += interest; totalPaid += paid; totalExtra += extraUsed;
+      balance -= prin;
+      if(balance<0) balance=0;
+      balances.push(balance);
+
+      var yr = Math.ceil(month/12);
+      if(!cur || cur.year!==yr){ cur={year:yr, opening: yr===1?P:yearly[yearly.length-1].closing, emiPaid:0, extra:0, interest:0, principal:0, closing:balance}; yearly.push(cur); }
+      cur.emiPaid += emiPaidThisMonth; cur.extra += extraUsed; cur.interest += interest; cur.principal += prin; cur.closing = balance;
+
+      if(balance<=0) break;
+      // Reduce-EMI strategy: after any prepayment, re-spread remaining balance over remaining original tenure
+      if(opts && opts.strategy==="emi" && extraUsed>0){
+        var remaining = totalMonthsOrig - month;
+        if(remaining>0){ emi = calcEMI(balance, annualRate, remaining); }
+      }
+      opts && (opts._lastEmi = emi);
+    }
+    return { months:month, totalInterest:totalInterest, totalPaid:totalPaid, totalExtra:totalExtra, yearly:yearly, balances:balances, finalEmi: emi };
+  }
+
+  function getInputs(){
+    return {
+      P: Math.max(0, parseFloat($("loanAmt").value)||0),
+      rate: Math.max(0, parseFloat($("rate").value)||0),
+      tenureYrs: Math.max(1, parseFloat($("tenure").value)||20),
+      emi: Math.max(0, parseFloat($("emi").value)||0),
+      start: $("startDate").value || "2026-11",
+      monthlyExtra: Math.max(0, parseFloat($("monthlyExtra").value)||0),
+      lumpSum: Math.max(0, parseFloat($("lumpSum").value)||0),
+      lumpMonth: Math.max(1, parseInt($("lumpMonth").value,10)||12),
+      annualAmt: Math.max(0, parseFloat($("annualAmt").value)||0)
+    };
+  }
+
+  function drawChart(baseBalances, newBalances){
+    var W=860,H=300,padL=64,padR=14,padT=14,padB=30;
+    var maxBal = Math.max.apply(null, baseBalances.concat(newBalances));
+    var maxMo = Math.max(baseBalances.length, newBalances.length)-1;
+    if(maxBal<=0 || maxMo<=0){ $("chartWrap").innerHTML=""; return; }
+    function x(m){ return padL + (m/maxMo)*(W-padL-padR); }
+    function y(v){ return padT + (1 - v/maxBal)*(H-padT-padB); }
+    function path(bal){
+      var pts=[];
+      for(var i=0;i<bal.length;i++){ pts.push((i===0?"M":"L")+x(i).toFixed(1)+","+y(bal[i]).toFixed(1)); }
+      return pts.join(" ");
+    }
+    var grid="";
+    for(var g=0; g<=4; g++){
+      var val = maxBal*g/4, yy=y(val);
+      grid += '<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="var(--line)" stroke-width="1"/>'
+            + '<text x="'+(padL-8)+'" y="'+(yy+4)+'" text-anchor="end" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono,monospace">'+fmtShort(val).replace("₹","₹")+'</text>';
+    }
+    var xlabels="";
+    var stepYrs = maxMo>240?5:(maxMo>120?4:2);
+    for(var yr=0; yr*12<=maxMo; yr+=stepYrs){
+      xlabels += '<text x="'+x(yr*12)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="var(--muted)">Yr '+yr+'</text>';
+    }
+    var area = path(newBalances) + " L"+x(newBalances.length-1).toFixed(1)+","+y(0)+" L"+x(0)+","+y(0)+" Z";
+    var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var fill = dark? "rgba(45,212,191,.14)" : "rgba(15,118,110,.10)";
+    $("chartWrap").innerHTML =
+      '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Outstanding balance chart comparing EMI-only versus with prepayment">'
+      + grid + xlabels
+      + '<path d="'+area+'" fill="'+fill+'" stroke="none"/>'
+      + '<path d="'+path(baseBalances)+'" fill="none" stroke="#94a3a0" stroke-width="2.5" stroke-linejoin="round"/>'
+      + '<path d="'+path(newBalances)+'" fill="none" stroke="var(--teal)" stroke-width="3" stroke-linejoin="round"/>'
+      + '</svg>';
+  }
+
+  var emiManual = false;
+  function recalcEMI(){
+    var P=parseFloat($("loanAmt").value)||0, rate=parseFloat($("rate").value)||0, yrs=parseFloat($("tenure").value)||0;
+    var e = calcEMI(P, rate, Math.round(yrs*12));
+    $("emi").value = Math.round(e);
+  }
+
+  function update(){
+    // sync labels
+    var inp = getInputs();
+    $("loanAmtVal").textContent = fmtShort(inp.P);
+    $("rateVal").textContent = inp.rate.toFixed(2)+"%";
+    $("tenureVal").textContent = inp.tenureYrs+" yrs · "+Math.round(inp.tenureYrs*12)+" mo";
+    $("monthlyExtraVal").textContent = fmtINR(inp.monthlyExtra)+"/mo";
+    $("loanAmtRange").value = Math.min(30000000, Math.max(1000000, inp.P||1000000));
+    $("rateRange").value = Math.min(12, Math.max(6, inp.rate||8.5));
+    $("tenureRange").value = Math.min(30, Math.max(5, inp.tenureYrs||20));
+    $("monthlyExtraRange").value = Math.min(100000, inp.monthlyExtra||0);
+
+    var totalMonths = Math.round(inp.tenureYrs*12);
+    var baseOpts = null;
+    var base = simulate(inp.P, inp.rate, inp.emi, totalMonths, null);
+    var err = $("errBox");
+    if(base.error){ err.style.display="block"; err.textContent=base.error; return; }
+    var withOpts = { monthlyExtra:inp.monthlyExtra, lumpSum:inp.lumpSum, lumpMonth:inp.lumpMonth, annualAmt:inp.annualAmt, strategy:strategy };
+    var nw = simulate(inp.P, inp.rate, inp.emi, totalMonths, withOpts);
+    if(nw.error){ err.style.display="block"; err.textContent=nw.error; return; }
+    err.style.display="none";
+
+    var intSaved = base.totalInterest - nw.totalInterest;
+    var totalSaved = base.totalPaid - nw.totalPaid;
+    var monthsSaved = base.months - nw.months;
+
+    // scenario line
+    var parts=[];
+    if(inp.monthlyExtra>0) parts.push(fmtINR(inp.monthlyExtra)+"/mo extra");
+    if(inp.lumpSum>0) parts.push(fmtShort(inp.lumpSum)+" in month "+inp.lumpMonth);
+    if(inp.annualAmt>0) parts.push(fmtINR(inp.annualAmt)+"/yr");
+    $("scenarioLine").textContent = parts.length? ("With "+parts.join(" + ")) : "No prepayment set — add an extra amount on the left to see the saving.";
+
+    $("interestSaved").textContent = fmtINR(intSaved);
+    $("interestSavedSub").textContent = intSaved>0 ? ("That is "+fmtShort(intSaved)+" you do not pay the bank — roughly "+(inp.P? (intSaved/inp.P*100).toFixed(0):0)+"% of your loan amount.") : "Add a prepayment to see interest saved.";
+    $("tenureSaved").textContent = strategy==="emi" ? fmtINR(inp.emi - nw.finalEmi)+"/mo" : fmtTenure(monthsSaved);
+    document.querySelector(".tenure-pill .t").textContent = strategy==="emi" ? "lower EMI from the end state" : "shorter loan life";
+
+    $("payoffDate").textContent = addMonths(inp.start, nw.months);
+    $("payoffOrig").textContent = "Originally "+addMonths(inp.start, base.months);
+    $("newTenure").textContent = fmtTenure(nw.months);
+    $("origTenureLine").textContent = "Originally "+fmtTenure(base.months);
+    if(strategy==="emi"){
+      $("emiStatLabel").textContent="EMI after prepayments";
+      $("emiStat").textContent = fmtINR(nw.finalEmi);
+      $("emiStatSub").textContent = "Started at "+fmtINR(inp.emi)+" · tenure unchanged";
+    } else {
+      $("emiStatLabel").textContent="EMI (unchanged)";
+      $("emiStat").textContent = fmtINR(inp.emi);
+      $("emiStatSub").textContent = "Reduce-tenure mode · loan ends early";
+    }
+
+    $("baseInterest").textContent = fmtINR(base.totalInterest);
+    $("newInterest").textContent = fmtINR(nw.totalInterest);
+    $("saveInterest2").textContent = fmtINR(intSaved);
+    $("baseTotal").textContent = fmtINR(base.totalPaid);
+    $("newTotal").textContent = fmtINR(nw.totalPaid);
+    $("saveTotal").textContent = strategy==="emi" ? fmtINR(intSaved)+" (via lower EMIs)" : fmtINR(totalSaved);
+    $("baseMonths").textContent = base.months;
+    $("newMonths").textContent = nw.months;
+    $("saveMonths").textContent = monthsSaved>0 ? ("−"+monthsSaved+" mo") : "Same tenure";
+
+    // table
+    var rows="";
+    nw.yearly.forEach(function(rw){
+      rows += "<tr><td>Year "+rw.year+"</td><td>"+fmtINR(rw.opening)+"</td><td>"+fmtINR(rw.emiPaid)+"</td><td>"+fmtINR(rw.extra)+"</td><td>"+fmtINR(rw.interest)+"</td><td>"+fmtINR(rw.principal)+"</td><td>"+fmtINR(rw.closing)+"</td></tr>";
+    });
+    $("amortBody").innerHTML = rows;
+
+    drawChart(base.balances, nw.balances);
+  }
+
+  function updateProp(){
+    var v = parseFloat($("propPrice").value)||0;
+    $("stampOut").textContent = fmtINR(v*0.0565);
+    $("regOut").textContent = fmtINR(v*0.01);
+    $("extraOut").textContent = fmtINR(v*0.0665);
+    $("ltvOut").textContent = fmtINR(v*0.90);
+  }
+
+  // wiring: paired range + number
+  function pair(rangeId, numId, onChange){
+    $(rangeId).addEventListener("input", function(){ $(numId).value = this.value; if(onChange) onChange(); update(); });
+    $(numId).addEventListener("input", function(){ if(onChange) onChange(); update(); });
+  }
+  pair("loanAmtRange","loanAmt", function(){ recalcEMI(); });
+  pair("rateRange","rate", function(){ recalcEMI(); });
+  pair("tenureRange","tenure", function(){ recalcEMI(); });
+  pair("monthlyExtraRange","monthlyExtra", null);
+  ["emi","startDate","lumpSum","lumpMonth","annualAmt"].forEach(function(id){
+    $(id).addEventListener("input", update);
+    $(id).addEventListener("change", update);
+  });
+  $("propPrice").addEventListener("input", updateProp);
+
+  $("stratTenure").addEventListener("click", function(){
+    strategy="tenure"; this.classList.add("active"); $("stratEmi").classList.remove("active");
+    $("stratNote").textContent="EMI stays the same, loan ends sooner. This saves the most interest — always ask your bank for this in writing.";
+    update();
+  });
+  $("stratEmi").addEventListener("click", function(){
+    strategy="emi"; this.classList.add("active"); $("stratTenure").classList.remove("active");
+    $("stratNote").textContent="Tenure stays the same, EMI drops after each prepayment. Good for cash-flow relief, but saves less interest than reducing tenure.";
+    update();
+  });
+  $("resetBtn").addEventListener("click", function(){
+    $("loanAmt").value=8000000; $("rate").value=8.5; $("tenure").value=20;
+    $("monthlyExtra").value=5000; $("lumpSum").value=300000; $("lumpMonth").value=12; $("annualAmt").value=50000;
+    $("startDate").value="2026-11"; recalcEMI(); update();
+  });
+
+  recalcEMI();
+  // after recalc, restore the stated default EMI label value is computed (~69,443 for 80L/8.5%/20y)
+  updateProp();
+  update();
+})();
+</script>
+</body>
+</html>
